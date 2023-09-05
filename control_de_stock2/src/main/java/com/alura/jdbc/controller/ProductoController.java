@@ -20,7 +20,7 @@ public class ProductoController {
         // TODO
     }
 
-    public List<?> listar() throws SQLException {
+    public List<Map<String, Object>> listar() throws SQLException {
         Connection con = DriverManager.getConnection(
                 "jdbc:mysql://localhost/control_de_stock?useTimezone=true&serverTimezone=UTC",
                 "root", "root");
