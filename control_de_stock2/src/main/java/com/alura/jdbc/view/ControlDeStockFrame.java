@@ -190,7 +190,15 @@ public class ControlDeStockFrame extends JFrame {
                     String nombre = (String) modelo.getValueAt(tabla.getSelectedRow(), 1);
                     String descripcion = (String) modelo.getValueAt(tabla.getSelectedRow(), 2);
 
-                    this.productoController.modificar(nombre, descripcion, id);
+                    System.out.println("[ControlStockFrame] MODIFICAR id: " + id+ "nombre: " + nombre+ "descripcion: " + descripcion);
+
+                    try {
+                        this.productoController.modificar(nombre, descripcion, id);
+                    } catch (SQLException e) {
+                        throw new RuntimeException(e);
+                    }
+                    JOptionPane.showMessageDialog(this, " item modificado con éxito!");
+
                 }, () -> JOptionPane.showMessageDialog(this, "Por favor, elije un item"));
     }
 
@@ -204,11 +212,16 @@ public class ControlDeStockFrame extends JFrame {
                 .ifPresentOrElse(fila -> {
                     Integer id = (Integer) modelo.getValueAt(tabla.getSelectedRow(), 0);
 
-                    this.productoController.eliminar(id);
+                    Integer cantidadDeRegistrosAfectados=0;
+                    try {
+                        cantidadDeRegistrosAfectados = this.productoController.eliminar(id);
+                    } catch (SQLException e) {
+                        throw new RuntimeException(e);
+                    }
 
                     modelo.removeRow(tabla.getSelectedRow());
 
-                    JOptionPane.showMessageDialog(this, "Item eliminado con éxito!");
+                    JOptionPane.showMessageDialog(this, cantidadDeRegistrosAfectados + " item(s) eliminado con éxito!");
                 }, () -> JOptionPane.showMessageDialog(this, "Por favor, elije un item"));
     }
 

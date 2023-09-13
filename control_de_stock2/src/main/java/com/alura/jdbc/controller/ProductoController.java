@@ -17,12 +17,27 @@ public class ProductoController {
     ConnectionFactory crearConexion = new ConnectionFactory();
     Connection conexion;
 
-    public void modificar(String nombre, String descripcion, Integer id) {
-        // TODO
+    public void modificar(String nombre, String descripcion, Integer id) throws SQLException {
+        conexion = crearConexion.conectar();
+        Statement statement = conexion.createStatement();
+
+        statement.execute( "UPDATE PRODUCTO SET NOMBRE = '" + nombre + "', DESCRIPCION = '" + descripcion + "' WHERE ID = " + id);
+        
+        conexion.close();
     }
 
-    public void eliminar(Integer id) {
-        // TODO
+    public int eliminar(Integer id) throws SQLException {
+        // consultar si el producto existe en la base de datos
+        conexion = crearConexion.conectar();
+        Statement statement = conexion.createStatement();
+
+        statement.execute( "DELETE FROM PRODUCTO WHERE ID = " + id);
+
+        int cantidadDeRegistrosAfectados = statement.getUpdateCount();
+        System.out.println("[ProductoController] Cantidad de eliminados:" + cantidadDeRegistrosAfectados);
+        
+        conexion.close();
+        return cantidadDeRegistrosAfectados;
     }
 
     public List<Map<String, Object>> listar() throws SQLException {
