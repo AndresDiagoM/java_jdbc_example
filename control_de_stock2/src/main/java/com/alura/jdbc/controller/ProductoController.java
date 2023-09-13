@@ -10,7 +10,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.alura.jdbc.factory.ConnectionFactory;
+
 public class ProductoController {
+    
+    ConnectionFactory crearConexion = new ConnectionFactory();
+    Connection conexion = crearConexion.conectar();
 
     public void modificar(String nombre, String descripcion, Integer id) {
         // TODO
@@ -21,11 +26,8 @@ public class ProductoController {
     }
 
     public List<Map<String, Object>> listar() throws SQLException {
-        Connection con = DriverManager.getConnection(
-                "jdbc:mysql://localhost/control_de_stock?useTimezone=true&serverTimezone=UTC",
-                "root", "root");
 
-        Statement query = con.createStatement();
+        Statement query = conexion.createStatement();
 
         //probar si se pude hacer consultas
 //        boolean result = query.execute("SELECT ID, NOMBRE, DESCRIPCION, CANTIDAD FROM PRODUCTO");
@@ -46,7 +48,7 @@ public class ProductoController {
             System.out.println("[ProductoController] Listar:" + producto);
         }
 
-        con.close();
+        conexion.close();
         return productos;
     }
 
