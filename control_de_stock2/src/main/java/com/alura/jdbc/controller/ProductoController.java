@@ -15,7 +15,7 @@ import com.alura.jdbc.factory.ConnectionFactory;
 public class ProductoController {
     
     ConnectionFactory crearConexion = new ConnectionFactory();
-    Connection conexion = crearConexion.conectar();
+    Connection conexion;
 
     public void modificar(String nombre, String descripcion, Integer id) {
         // TODO
@@ -26,7 +26,7 @@ public class ProductoController {
     }
 
     public List<Map<String, Object>> listar() throws SQLException {
-
+        conexion = crearConexion.conectar();
         Statement query = conexion.createStatement();
 
         //probar si se pude hacer consultas
@@ -52,8 +52,25 @@ public class ProductoController {
         return productos;
     }
 
-    public void guardar(Object producto) {
-        // TODO
+    public void guardar(Map<String, String> producto) throws SQLException {
+        // hacer insert en la tabla de productos
+        conexion = crearConexion.conectar();
+        Statement statement = conexion.createStatement();
+
+        statement.execute("INSERT INTO PRODUCTO (NOMBRE, DESCRIPCION, CANTIDAD)" 
+        +" VALUES ('" + producto.get("NOMBRE") + "', '" 
+        + producto.get("DESCRIPCION") + "', '" 
+        + producto.get("CANTIDAD") + "')", Statement.RETURN_GENERATED_KEYS );
+
+        //Statement.RETURN_GENERATED_KEYS es para que devuelva el id del producto que se acaba de crear
+
+        ResultSet resultSet = statement.getGeneratedKeys();
+
+        while(resultSet.next()){
+            producto.put("ID", resultSet.getString(1));
+            System.out.println("[ProductoController] ID:" + producto.get("ID"));
+        }
+        conexion.close();
     }
 
 }
