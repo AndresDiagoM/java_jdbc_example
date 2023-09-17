@@ -2,6 +2,7 @@ package com.alura.jdbc.controller;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -19,9 +20,12 @@ public class ProductoController {
 
     public void modificar(String nombre, String descripcion, Integer id) throws SQLException {
         conexion = crearConexion.conectar();
-        Statement statement = conexion.createStatement();
+        PreparedStatement statement = conexion.prepareStatement("UPDATE PRODUCTO SET NOMBRE = ?, DESCRIPCION = ? WHERE ID = ?");
+        statement.setString(1, nombre);
+        statement.setString(2, descripcion);
+        statement.setInt(3, id);
 
-        statement.execute( "UPDATE PRODUCTO SET NOMBRE = '" + nombre + "', DESCRIPCION = '" + descripcion + "' WHERE ID = " + id);
+        statement.execute();
         
         conexion.close();
     }
@@ -29,9 +33,8 @@ public class ProductoController {
     public int eliminar(Integer id) throws SQLException {
         // consultar si el producto existe en la base de datos
         conexion = crearConexion.conectar();
-        Statement statement = conexion.createStatement();
-
-        statement.execute( "DELETE FROM PRODUCTO WHERE ID = " + id);
+        PreparedStatement statement = conexion.prepareStatement("DELETE FROM PRODUCTO WHERE ID = ?");
+        statement.setInt(1, id);
 
         int cantidadDeRegistrosAfectados = statement.getUpdateCount();
         System.out.println("[ProductoController] Cantidad de eliminados:" + cantidadDeRegistrosAfectados);
@@ -42,14 +45,14 @@ public class ProductoController {
 
     public List<Map<String, Object>> listar() throws SQLException {
         conexion = crearConexion.conectar();
-        Statement query = conexion.createStatement();
 
         //probar si se pude hacer consultas
 //        boolean result = query.execute("SELECT ID, NOMBRE, DESCRIPCION, CANTIDAD FROM PRODUCTO");
 //        System.out.println("[ProductoController] Listar:" + result);
         
         //guardar productos en una lista
-        ResultSet resultSet = query.executeQuery("SELECT ID, NOMBRE, DESCRIPCION, CANTIDAD FROM PRODUCTO");
+        PreparedStatement query = conexion.prepareStatement("SELECT ID, NOMBRE, DESCRIPCION, CANTIDAD FROM PRODUCTO");
+        ResultSet resultSet = query.executeQuery();
 
         List<Map<String, Object>> productos = new ArrayList<>();
 
@@ -70,22 +73,48 @@ public class ProductoController {
     public void guardar(Map<String, String> producto) throws SQLException {
         // hacer insert en la tabla de productos
         conexion = crearConexion.conectar();
-        Statement statement = conexion.createStatement();
+        conexion.setAutoCommit(false); //para que no se haga commit automatico
 
-        statement.execute("INSERT INTO PRODUCTO (NOMBRE, DESCRIPCION, CANTIDAD)" 
+        String nombre = producto.get("NOMBRE");
+        String descripcion = producto.get("DESCRIPCION");
+        Integer cantidad = Integer.valueOf(producto.get("CANTIDAD"));
+        Integer maximaCantidad = 50;
+        
+        //con este tipo de query pueden hacer sql inyection
+        String query = "INSERT INTO PRODUCTO (NOMBRE, DESCRIPCION, CANTIDAD)" 
         +" VALUES ('" + producto.get("NOMBRE") + "', '" 
         + producto.get("DESCRIPCION") + "', '" 
-        + producto.get("CANTIDAD") + "')", Statement.RETURN_GENERATED_KEYS );
+        + producto.get("CANTIDAD") + "')";
+        System.out.println("[ProductoController] Query Guardar:" + query);
+        
+        //evitar inyeccion sql con prepared statement
+        String preparedQuery = "INSERT INTO PRODUCTO (NOMBRE, DESCRIPCION, CANTIDAD) VALUES (?, ?, ?)";
+        PreparedStatement preparedStatement = conexion.prepareStatement(preparedQuery, Statement.RETURN_GENERATED_KEYS);
+        
+        do{ // cada 50 productos se hace un insert
+            Integer cantidadInt = Math.min(cantidad, maximaCantidad);
+            ejecutaRegistro(nombre, descripcion, String.valueOf(cantidadInt), preparedStatement, producto);
+            cantidad = cantidad - maximaCantidad;
+        }while(cantidad > 0);
+
+        conexion.close();
+    }
+    private void ejecutaRegistro(String nombre, String descripcion, String cantidad, PreparedStatement preparedStatement, Map<String, String> producto) throws SQLException{
+        preparedStatement.setString(1, nombre);
+        preparedStatement.setString(2, descripcion);
+        preparedStatement.setString(3, cantidad);
+        System.out.println("[ProductoController] Query Prepared Guardar:" + preparedStatement);
+
+        preparedStatement.execute();
 
         //Statement.RETURN_GENERATED_KEYS es para que devuelva el id del producto que se acaba de crear
 
-        ResultSet resultSet = statement.getGeneratedKeys();
+        ResultSet resultSet = preparedStatement.getGeneratedKeys();
 
         while(resultSet.next()){
             producto.put("ID", resultSet.getString(1));
             System.out.println("[ProductoController] ID:" + producto.get("ID"));
         }
-        conexion.close();
     }
 
 }
