@@ -91,19 +91,34 @@ public class ProductoController {
         String preparedQuery = "INSERT INTO PRODUCTO (NOMBRE, DESCRIPCION, CANTIDAD) VALUES (?, ?, ?)";
         PreparedStatement preparedStatement = conexion.prepareStatement(preparedQuery, Statement.RETURN_GENERATED_KEYS);
         
-        do{ // cada 50 productos se hace un insert
-            Integer cantidadInt = Math.min(cantidad, maximaCantidad);
-            ejecutaRegistro(nombre, descripcion, String.valueOf(cantidadInt), preparedStatement, producto);
-            cantidad = cantidad - maximaCantidad;
-        }while(cantidad > 0);
+        try {
+            do{ // cada 50 productos se hace un insert
+                Integer cantidadInt = Math.min(cantidad, maximaCantidad);
+                ejecutaRegistro(nombre, descripcion, cantidadInt, preparedStatement, producto);
+                cantidad = cantidad - maximaCantidad;
+            }while(cantidad > 0);
+            conexion.commit(); //hacer commit manual en base de datos
+            System.out.println("[ProductoController] Commit exitodo JDBC:" + preparedStatement);
+        } catch (Exception e) {
+            conexion.rollback(); //hacer rollback manual en base de datos
+            //un rollback es para que no se haga ningun cambio en la base de datos
+            System.out.println("[ProductoController] Commit fallido JDBC:" + preparedStatement);
+            throw new RuntimeException(e);
+        }
 
+        preparedStatement.close();
         conexion.close();
     }
-    private void ejecutaRegistro(String nombre, String descripcion, String cantidad, PreparedStatement preparedStatement, Map<String, String> producto) throws SQLException{
+    private void ejecutaRegistro(String nombre, String descripcion, Integer cantidad, PreparedStatement preparedStatement, Map<String, String> producto) throws SQLException{
         preparedStatement.setString(1, nombre);
         preparedStatement.setString(2, descripcion);
-        preparedStatement.setString(3, cantidad);
+        preparedStatement.setInt(3, cantidad);
         System.out.println("[ProductoController] Query Prepared Guardar:" + preparedStatement);
+
+        // error de ejemplo, para rpbar el rollback
+        // if (cantidad < 50) {
+        //     throw new RuntimeException("Error de ejemplo");
+        // }
 
         preparedStatement.execute();
 
