@@ -4,25 +4,28 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-/**
- *
- * @author felip
- */
+import com.mchange.v2.c3p0.ComboPooledDataSource;
+import javax.sql.DataSource;
+
+
 public class ConnectionFactory {
     
     //---------------- ATRIBUTOS ----------------
     public static final String URL = "jdbc:mysql://localhost/control_de_stock?useTimeZone=true&serverTimeZone=UTC";
-    
+    private DataSource dataSource;
+
+    //---------------- CONSTRUCTOR ----------------
+    public ConnectionFactory() {
+        var pooledDataSource = new ComboPooledDataSource();
+        pooledDataSource.setJdbcUrl(URL);
+        pooledDataSource.setUser("root");
+        pooledDataSource.setPassword("root");
+
+        this.dataSource = pooledDataSource;
+    }
     
     //---------------- METODOS ----------------
-    public Connection conectar() {
-        Connection con = null;
-        try {
-            con = DriverManager.getConnection(URL,"root", "root");
-        } catch (SQLException e) {
-            e.printStackTrace();
-            System.out.println("[CreaConexion] Error al conectar con la base de datos");
-        }
-        return con;
+    public Connection conectar() throws SQLException {
+        return this.dataSource.getConnection();
     }
 }
