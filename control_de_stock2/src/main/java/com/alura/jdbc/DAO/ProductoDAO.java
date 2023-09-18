@@ -1,6 +1,7 @@
 package com.alura.jdbc.DAO;
 
 import com.alura.jdbc.factory.ConnectionFactory;
+import com.alura.jdbc.modelo.Categoria;
 import com.alura.jdbc.modelo.Producto;
 
 import java.sql.Connection;
@@ -28,13 +29,10 @@ public class ProductoDAO {
     public ProductoDAO(Connection con) {
         this.conexion = con;
     }
-    public ProductoDAO() {
-        this.conexion = new ConnectionFactory().conectar();
-    }
 
     //---------------- METODOS ----------------
     public void modificar(String nombre, String descripcion, Integer id) {
-        try(this.conexion){
+        try{
             var statement = this.conexion.prepareStatement("UPDATE PRODUCTO SET NOMBRE = ?, DESCRIPCION = ? WHERE ID = ?");
             statement.setString(1, nombre);
             statement.setString(2, descripcion);
@@ -47,7 +45,7 @@ public class ProductoDAO {
 
     public int eliminar(Integer id) {
         // consultar si el producto existe en la base de datos
-        try(this.conexion){
+        try{
             var statement = this.conexion.prepareStatement("DELETE FROM PRODUCTO WHERE ID = ?");
             statement.setInt(1, id);
     
@@ -61,46 +59,41 @@ public class ProductoDAO {
     }
 
     public void guardarProducto(Producto producto){
-        
-        try(conexion){
-            String preparedQuery = "INSERT INTO PRODUCTO (NOMBRE, DESCRIPCION, CANTIDAD) VALUES (?, ?, ?)";
-            final PreparedStatement preparedStatement = conexion.prepareStatement(preparedQuery, Statement.RETURN_GENERATED_KEYS);
-
+        System.out.println("[ProductoController] Guardar");
+        try{
+            String preparedQuery = "INSERT INTO PRODUCTO (NOMBRE, DESCRIPCION, CANTIDAD, CATEGORIA_ID)"+
+                                    " VALUES (?, ?, ?, ?)";
+            PreparedStatement preparedStatement = conexion.prepareStatement(preparedQuery, Statement.RETURN_GENERATED_KEYS);
             try(preparedStatement){ // esto hace que se cierre el prepared statement automaticamente
-                ejecutaRegistro(preparedStatement, producto);
-            } 
+                
+                preparedStatement.setString(1, producto.getNombre());
+                preparedStatement.setString(2, producto.getDescripcion());
+                preparedStatement.setInt(3, producto.getCantidad());
+                preparedStatement.setInt(4, producto.getCategoria_id());
+                System.out.println("[ProductoController] Query Prepared Guardar:" + preparedStatement);
+
+                preparedStatement.execute();
+
+                final ResultSet resultSet = preparedStatement.getGeneratedKeys();
+
+                try(resultSet){
+                    while(resultSet.next()){
+                        producto.setId(resultSet.getInt(1));
+                        System.out.println("[ProductoController] ID:" + producto);
+                    }
+                }
+            }
         } catch(Exception e){
             throw new RuntimeException(e);
         }
         // esto hace que se cierre la conexion automaticamente (conexion.close())
     }
-    private void ejecutaRegistro(PreparedStatement preparedStatement, Producto producto) throws SQLException{
-        preparedStatement.setString(1, producto.getNombre());
-        preparedStatement.setString(2, producto.getDescripcion());
-        preparedStatement.setInt(3, producto.getCantidad());
-        System.out.println("[ProductoController] Query Prepared Guardar:" + preparedStatement);
-
-        // error de ejemplo, para rpbar el rollback
-        // if (cantidad < 50) {
-        //     throw new RuntimeException("Error de ejemplo");
-        // }
-
-        preparedStatement.execute();
-
-        final ResultSet resultSet = preparedStatement.getGeneratedKeys();
-        try(resultSet){
-            while(resultSet.next()){
-                producto.setId(resultSet.getInt(1));
-                System.out.println("[ProductoController] ID:" + producto);
-            }
-        }
-    }
 
     public List<Producto> listarProducto() {
         List<Producto> productos = new ArrayList<>();
-        try(this.conexion){
+        try{
             //guardar productos en una lista
-            PreparedStatement query = conexion.prepareStatement("SELECT ID, NOMBRE, DESCRIPCION, CANTIDAD FROM PRODUCTO");
+            PreparedStatement query = conexion.prepareStatement("SELECT ID, NOMBRE, DESCRIPCION, CANTIDAD, CATEGORIA_ID FROM PRODUCTO");
             ResultSet resultSet = query.executeQuery();
             try(query){
                 try(resultSet){
@@ -110,15 +103,15 @@ public class ProductoDAO {
                         producto.setNombre(resultSet.getString("NOMBRE"));
                         producto.setDescripcion(resultSet.getString("DESCRIPCION"));
                         producto.setCantidad(resultSet.getInt("CANTIDAD"));
+                        producto.setCategoria_id(resultSet.getInt("CATEGORIA_ID"));
                         productos.add(producto);
                     }
                 }
             }
+            return productos;
         }catch(Exception e){
             throw new RuntimeException(e);
         }
-        return productos;
     }
-
 
 }

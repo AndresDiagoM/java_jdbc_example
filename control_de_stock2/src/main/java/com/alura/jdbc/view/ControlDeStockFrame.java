@@ -4,7 +4,6 @@ import java.awt.Color;
 import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,19 +18,21 @@ import javax.swing.table.DefaultTableModel;
 
 import com.alura.jdbc.controller.CategoriaController;
 import com.alura.jdbc.controller.ProductoController;
+import com.alura.jdbc.modelo.Categoria;
 import com.alura.jdbc.modelo.Producto;
 
-import java.sql.SQLException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
+/**
+ * Control de Stock Frame
+ *  - JFrame, es decir, una ventana
+ * @autor felip
+ */
 public class ControlDeStockFrame extends JFrame {
 
     private static final long serialVersionUID = 1L;
 
     private JLabel labelNombre, labelDescripcion, labelCantidad, labelCategoria;
     private JTextField textoNombre, textoDescripcion, textoCantidad;
-    private JComboBox<Object> comboCategoria;
+    private JComboBox<Categoria> comboCategoria;
     private JButton botonGuardar, botonModificar, botonLimpiar, botonEliminar, botonReporte;
     private JTable tabla;
     private DefaultTableModel modelo;
@@ -104,12 +105,11 @@ public class ControlDeStockFrame extends JFrame {
         textoNombre = new JTextField();
         textoDescripcion = new JTextField();
         textoCantidad = new JTextField();
-        comboCategoria = new JComboBox<>();
-        comboCategoria.addItem("Elige una Categoría");
+        comboCategoria = new JComboBox<Categoria>();
+        comboCategoria.addItem(new Categoria(0, "Seleccione una categoría"));
 
-        
-        var categorias = this.categoriaController.listar();
-        // categorias.forEach(categoria -> comboCategoria.addItem(categoria));
+        List<Categoria> categorias = this.categoriaController.listar();
+        categorias.forEach(categoria -> comboCategoria.addItem(categoria));
 
         textoNombre.setBounds(10, 25, 265, 20);
         textoDescripcion.setBounds(10, 65, 265, 20);
@@ -264,7 +264,9 @@ public class ControlDeStockFrame extends JFrame {
         producto.setDescripcion(textoDescripcion.getText());
         producto.setCantidad(cantidadInt);
 
-        var categoria = comboCategoria.getSelectedItem();
+        Integer categoria = ((Categoria) comboCategoria.getSelectedItem()).getId();
+        System.out.println("[ControlStockFrame] GUARDAR categoria id: " + categoria+"\n");
+        producto.setCategoria_id(categoria);
 
         this.productoController.guardar(producto);
 

@@ -8,16 +8,18 @@ public class Producto {
     private String nombre;
     private String descripcion;
     private Integer cantidad;
+    private Integer categoria_id;
 
     //---------------- CONSTRUCTOR ----------------/
-    public Producto(Integer id, String nombre, String descripcion, Integer cantidad) {
+    public Producto(Integer id, String nombre, String descripcion, Integer cantidad, Integer categoria_id) {
         this.id = id;
         this.nombre = nombre;
         this.descripcion = descripcion;
         this.cantidad = cantidad;
+        this.categoria_id = categoria_id;
     }
     public Producto(){
-        this(null, null, null, null);
+        this(null, null, null, null, null);
     }
 
     //---------------- METODOS ----------------
@@ -26,7 +28,6 @@ public class Producto {
         return "Producto [cantidad=" + cantidad + ", descripcion=" + descripcion + ", id=" + id + ", nombre=" + nombre
                 + "]";
     }
-
 
 
     //---------------- GETTERS Y SETTERS ----------------/
@@ -69,5 +70,16 @@ public class Producto {
             throw new IllegalArgumentException("La cantidad no puede ser nula o negativa");
         }
         this.cantidad = cantidad;
+    }
+
+    public Integer getCategoria_id() {
+        return categoria_id;
+    }
+
+    public void setCategoria_id(Integer categoria_id) {
+        if(categoria_id == null || categoria_id < 0){
+            throw new IllegalArgumentException("La categoria_id no puede ser nula o negativa");
+        }
+        this.categoria_id = categoria_id;
     }
 }

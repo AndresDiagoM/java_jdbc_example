@@ -1,20 +1,20 @@
 package com.alura.jdbc.controller;
 
-import java.sql.SQLException;
 import java.util.List;
 import com.alura.jdbc.factory.ConnectionFactory;
+import com.alura.jdbc.modelo.Categoria;
 import com.alura.jdbc.modelo.Producto;
 import com.alura.jdbc.DAO.ProductoDAO;
 
 public class ProductoController {
 
     //---------------- ATRIBUTOS ----------------
-    ConnectionFactory crearConexion = new ConnectionFactory();
     ProductoDAO ProductoDAO;
 
     //---------------- CONSTRUCTOR ----------------
     public ProductoController() {
-        this.ProductoDAO = new ProductoDAO();
+        ConnectionFactory ConnectionFactory = new ConnectionFactory();
+        this.ProductoDAO = new ProductoDAO(ConnectionFactory.conectar());
     }
 
     //---------------- METODOS ----------------
