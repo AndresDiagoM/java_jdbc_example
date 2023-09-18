@@ -46,23 +46,23 @@ public class ReporteFrame extends JFrame {
     }
 
     private void cargaReporte() {
-        var contenido = categoriaController.cargaReporte();
+        var categorias = categoriaController.cargaReporte();
+        var productos = productoController.listar();
         
-        contenido.forEach(categoria -> {
+        categorias.forEach(categoria -> {
             modelo.addRow(new Object[] {categoria});
-
-            var productos = productoController.listar(categoria);
-
-            productos.forEach(producto -> {
-                modelo.addRow(
-                    new Object[] {
-                        "",
-                        producto.getNombre(),
-                        producto.getCantidad()
-                    }
-                );
-            });
-
+    
+            productos.stream()
+                .filter(producto -> producto.getCategoria_id().equals(categoria.getId())) // Filtro aquí
+                .forEach(producto -> {
+                    modelo.addRow(
+                        new Object[] {
+                            "**************************",
+                            producto.getNombre(),
+                            producto.getCantidad()
+                        }
+                    );
+                });
         });
     }
 
