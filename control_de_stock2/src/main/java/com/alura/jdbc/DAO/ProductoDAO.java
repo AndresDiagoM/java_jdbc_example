@@ -28,23 +28,24 @@ public class ProductoDAO {
     public ProductoDAO(Connection con) {
         this.conexion = con;
     }
-
-    public ProductoDAO() throws SQLException {
+    public ProductoDAO() {
         this.conexion = new ConnectionFactory().conectar();
     }
 
     //---------------- METODOS ----------------
-    public void modificar(String nombre, String descripcion, Integer id) throws SQLException {
+    public void modificar(String nombre, String descripcion, Integer id) {
         try(this.conexion){
             var statement = this.conexion.prepareStatement("UPDATE PRODUCTO SET NOMBRE = ?, DESCRIPCION = ? WHERE ID = ?");
             statement.setString(1, nombre);
             statement.setString(2, descripcion);
             statement.setInt(3, id);
             statement.execute();
+        }catch(Exception e){
+            throw new RuntimeException(e);
         }
     }
 
-    public int eliminar(Integer id) throws SQLException {
+    public int eliminar(Integer id) {
         // consultar si el producto existe en la base de datos
         try(this.conexion){
             var statement = this.conexion.prepareStatement("DELETE FROM PRODUCTO WHERE ID = ?");
@@ -54,28 +55,24 @@ public class ProductoDAO {
             System.out.println("[ProductoController] Cantidad de eliminados:" + cantidadDeRegistrosAfectados);
             
             return cantidadDeRegistrosAfectados;
+        }catch(Exception e){
+            throw new RuntimeException(e);
         }
     }
 
-    public void guardarProducto(Producto producto) throws SQLException{
+    public void guardarProducto(Producto producto){
         
         try(conexion){
-            conexion.setAutoCommit(false); //para que no se haga commit automatico
-            //evitar inyeccion sql con prepared statement
             String preparedQuery = "INSERT INTO PRODUCTO (NOMBRE, DESCRIPCION, CANTIDAD) VALUES (?, ?, ?)";
             final PreparedStatement preparedStatement = conexion.prepareStatement(preparedQuery, Statement.RETURN_GENERATED_KEYS);
 
             try(preparedStatement){ // esto hace que se cierre el prepared statement automaticamente
-                ejecutaRegistro(preparedStatement, producto);                
-                conexion.commit(); //hacer commit manual en base de datos
-                System.out.println("[ProductoController] Commit exitodo JDBC:" + preparedStatement);
-            } catch (Exception e) {
-                conexion.rollback(); //hacer rollback manual en base de datos
-                //un rollback es para que no se haga ningun cambio en la base de datos
-                System.out.println("[ProductoController] Commit fallido JDBC:" + preparedStatement);
-                throw new RuntimeException(e);
-            }
-        } // esto hace que se cierre la conexion automaticamente (conexion.close())
+                ejecutaRegistro(preparedStatement, producto);
+            } 
+        } catch(Exception e){
+            throw new RuntimeException(e);
+        }
+        // esto hace que se cierre la conexion automaticamente (conexion.close())
     }
     private void ejecutaRegistro(PreparedStatement preparedStatement, Producto producto) throws SQLException{
         preparedStatement.setString(1, producto.getNombre());
@@ -99,7 +96,7 @@ public class ProductoDAO {
         }
     }
 
-    public List<Producto> listarProducto() throws SQLException{
+    public List<Producto> listarProducto() {
         List<Producto> productos = new ArrayList<>();
         try(this.conexion){
             //guardar productos en una lista
@@ -117,6 +114,8 @@ public class ProductoDAO {
                     }
                 }
             }
+        }catch(Exception e){
+            throw new RuntimeException(e);
         }
         return productos;
     }

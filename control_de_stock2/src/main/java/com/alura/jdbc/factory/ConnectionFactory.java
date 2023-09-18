@@ -26,7 +26,11 @@ public class ConnectionFactory {
     }
     
     //---------------- METODOS ----------------
-    public Connection conectar() throws SQLException {
-        return this.dataSource.getConnection();
+    public Connection conectar() {
+        try {
+            return this.dataSource.getConnection();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

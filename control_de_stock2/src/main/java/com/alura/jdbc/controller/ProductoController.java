@@ -10,28 +10,28 @@ public class ProductoController {
 
     //---------------- ATRIBUTOS ----------------
     ConnectionFactory crearConexion = new ConnectionFactory();
-    ProductoDAO persistenciaProducto;
+    ProductoDAO ProductoDAO;
 
     //---------------- CONSTRUCTOR ----------------
-    public ProductoController() throws SQLException {
-        this.persistenciaProducto = new ProductoDAO();
+    public ProductoController() {
+        this.ProductoDAO = new ProductoDAO();
     }
 
     //---------------- METODOS ----------------
-    public void modificar(String nombre, String descripcion, Integer id) throws SQLException {
-        persistenciaProducto.modificar(nombre, descripcion, id);
+    public void modificar(String nombre, String descripcion, Integer id) {
+        ProductoDAO.modificar(nombre, descripcion, id);
     }
 
-    public int eliminar(Integer id) throws SQLException {
-        return persistenciaProducto.eliminar(id);
+    public int eliminar(Integer id) {
+        return ProductoDAO.eliminar(id);
     }
 
-    public List<Producto> listar() throws SQLException {
-        return persistenciaProducto.listarProducto();
+    public List<Producto> listar() {
+        return ProductoDAO.listarProducto();
     }
 
-    public void guardar(Producto producto) throws SQLException {
-        persistenciaProducto.guardarProducto(producto);
+    public void guardar(Producto producto) {
+        ProductoDAO.guardarProducto(producto);
     }
 
 }
