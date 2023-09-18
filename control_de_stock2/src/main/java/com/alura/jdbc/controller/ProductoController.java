@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.alura.jdbc.factory.ConnectionFactory;
+import com.alura.jdbc.modelo.Producto;
 
 public class ProductoController {
     
@@ -69,13 +70,7 @@ public class ProductoController {
         return productos;
     }
 
-    public void guardar(Map<String, String> producto) throws SQLException {
-        // hacer insert en la tabla de productos
-        String nombre = producto.get("NOMBRE");
-        String descripcion = producto.get("DESCRIPCION");
-        Integer cantidad = Integer.valueOf(producto.get("CANTIDAD"));
-        Integer maximaCantidad = 50;
-
+    public void guardar(Producto producto) throws SQLException {
         final Connection conexion = crearConexion.conectar();
         
         try(conexion){
@@ -83,13 +78,9 @@ public class ProductoController {
             //evitar inyeccion sql con prepared statement
             String preparedQuery = "INSERT INTO PRODUCTO (NOMBRE, DESCRIPCION, CANTIDAD) VALUES (?, ?, ?)";
             final PreparedStatement preparedStatement = conexion.prepareStatement(preparedQuery, Statement.RETURN_GENERATED_KEYS);
-    
+
             try(preparedStatement){ // esto hace que se cierre el prepared statement automaticamente
-                do{ // cada 50 productos se hace un insert
-                    Integer cantidadInt = Math.min(cantidad, maximaCantidad);
-                    ejecutaRegistro(nombre, descripcion, cantidadInt, preparedStatement, producto);
-                    cantidad = cantidad - maximaCantidad;
-                }while(cantidad > 0);
+                ejecutaRegistro(preparedStatement, producto);                
                 conexion.commit(); //hacer commit manual en base de datos
                 System.out.println("[ProductoController] Commit exitodo JDBC:" + preparedStatement);
             } catch (Exception e) {
@@ -100,10 +91,10 @@ public class ProductoController {
             }
         } // esto hace que se cierre la conexion automaticamente (conexion.close())
     }
-    private void ejecutaRegistro(String nombre, String descripcion, Integer cantidad, PreparedStatement preparedStatement, Map<String, String> producto) throws SQLException{
-        preparedStatement.setString(1, nombre);
-        preparedStatement.setString(2, descripcion);
-        preparedStatement.setInt(3, cantidad);
+    private void ejecutaRegistro(PreparedStatement preparedStatement, Producto producto) throws SQLException{
+        preparedStatement.setString(1, producto.getNombre());
+        preparedStatement.setString(2, producto.getDescripcion());
+        preparedStatement.setInt(3, producto.getCantidad());
         System.out.println("[ProductoController] Query Prepared Guardar:" + preparedStatement);
 
         // error de ejemplo, para rpbar el rollback
@@ -116,12 +107,10 @@ public class ProductoController {
         final ResultSet resultSet = preparedStatement.getGeneratedKeys();
         try(resultSet){
             while(resultSet.next()){
-                producto.put("ID", resultSet.getString(1));
-                System.out.println("[ProductoController] ID:" + producto.get("ID"));
+                producto.setId(resultSet.getInt(1));
+                System.out.println("[ProductoController] ID:" + producto);
             }
         }
-        
-        
     }
 
 }
