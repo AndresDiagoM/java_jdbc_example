@@ -114,4 +114,31 @@ public class ProductoDAO {
         }
     }
 
+    public List<Producto> listarProducto(Integer Id) {
+        List<Producto> productos = new ArrayList<>();
+        try{
+            //guardar productos en una lista
+            String query = "SELECT ID, NOMBRE, DESCRIPCION, CANTIDAD, CATEGORIA_ID FROM PRODUCTO"
+                            + " WHERE CATEGORIA_ID = " + Id;
+            PreparedStatement stmt = conexion.prepareStatement(query);
+            ResultSet resultSet = stmt.executeQuery();
+            try(stmt){
+                try(resultSet){
+                    while (resultSet.next()) {
+                        Producto producto = new Producto();
+                        producto.setId(resultSet.getInt("ID"));
+                        producto.setNombre(resultSet.getString("NOMBRE"));
+                        producto.setDescripcion(resultSet.getString("DESCRIPCION"));
+                        producto.setCantidad(resultSet.getInt("CANTIDAD"));
+                        producto.setCategoria_id(resultSet.getInt("CATEGORIA_ID"));
+                        productos.add(producto);
+                    }
+                }
+            }
+            return productos;
+        }catch(Exception e){
+            throw new RuntimeException(e);
+        }
+    }
+
 }

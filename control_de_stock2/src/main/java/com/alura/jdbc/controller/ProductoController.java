@@ -29,9 +29,13 @@ public class ProductoController {
     public List<Producto> listar() {
         return ProductoDAO.listarProducto();
     }
+    public List<Producto> listar(Categoria categoria) {
+        return ProductoDAO.listarProducto(categoria.getId());
+    }
 
     public void guardar(Producto producto) {
         ProductoDAO.guardarProducto(producto);
     }
+
 
 }
