@@ -5,6 +5,7 @@ import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Optional;
 
 import javax.swing.JButton;
@@ -41,7 +42,11 @@ public class ControlDeStockFrame extends JFrame {
         super("Productos");
 
         this.categoriaController = new CategoriaController();
-        this.productoController = new ProductoController();
+        try {
+            this.productoController = new ProductoController();
+        } catch (SQLException ex) {
+            Logger.getLogger(ControlDeStockFrame.class.getName()).log(Level.SEVERE, null, ex);
+        }
 
         Container container = getContentPane();
         setLayout(null);
@@ -104,7 +109,7 @@ public class ControlDeStockFrame extends JFrame {
         comboCategoria = new JComboBox<>();
         comboCategoria.addItem("Elige una Categoría");
 
-        // TODO
+        
         var categorias = this.categoriaController.listar();
         // categorias.forEach(categoria -> comboCategoria.addItem(categoria));
 
@@ -229,10 +234,10 @@ public class ControlDeStockFrame extends JFrame {
 
     private void cargarTabla() {
         try {
-            var productos = this.productoController.listar();
+            List<Producto> productos = this.productoController.listar();
 
             try {
-                productos.forEach(producto -> modelo.addRow(new Object[] { producto.get("ID"), producto.get("NOMBRE"), producto.get("DESCRIPCION"), producto.get("CANTIDAD") }));
+                productos.forEach(producto -> modelo.addRow(new Object[] { producto.getId(), producto.getNombre(), producto.getDescripcion(), producto.getCantidad() }));
             } catch (Exception e) {
                 throw e;
             }
