@@ -47,14 +47,13 @@ public class ReporteFrame extends JFrame {
 
     private void cargaReporte() {
         var categorias = categoriaController.cargaReporte();
-        var productos = productoController.listar();
         
         categorias.forEach(categoria -> {
             modelo.addRow(new Object[] {categoria});
+
+            var productos = categoria.getProductos();
     
-            productos.stream()
-                .filter(producto -> producto.getCategoria_id().equals(categoria.getId())) // Filtro aquí
-                .forEach(producto -> {
+            productos.forEach(producto -> {
                     modelo.addRow(
                         new Object[] {
                             "**************************",

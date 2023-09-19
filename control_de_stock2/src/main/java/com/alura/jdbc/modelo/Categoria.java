@@ -1,5 +1,7 @@
 package com.alura.jdbc.modelo;
 
+import java.util.List;
+
 /**
  * Categoria
  * 
@@ -10,6 +12,7 @@ public class Categoria {
     //---------------- ATRIBUTOS ----------------/
     private Integer id;
     private String nombre;
+    private List<Producto> productos;
 
     //---------------- CONSTRUCTOR ----------------/
     public Categoria(Integer id, String nombre) {
@@ -25,6 +28,12 @@ public class Categoria {
     public String toString() {
         //return "Categoria [id=" + id + ", nombre=" + nombre + "]";
         return nombre;
+    }
+    public void addProducto(Producto producto){
+        if(this.productos==null){
+            productos = new java.util.ArrayList<>();
+        }
+        this.productos.add(producto);
     }
 
     //---------------- GETTERS Y SETTERS ----------------/
@@ -48,5 +57,9 @@ public class Categoria {
             throw new IllegalArgumentException("El nombre no puede ser nulo o vacio");
         }
         this.nombre = nombre;
+    }
+
+    public List<Producto> getProductos() {
+        return productos;
     }
 }
